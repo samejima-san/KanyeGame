@@ -22,20 +22,21 @@ class Zone():
         self.posx = 310#(display_height * 0.34)
         self.posy = 310#(display_height * 0.34)
         self.zoneImg = pygame.image.load('images/zone.png')
+        self.rect = self.image.get_rect(self.posx,self.posy)
 
     def takeDamage(self):
-        #take Damage
-        pass
+        loseHealth()
+        if self.health <= 0:
+            death()
     
     def addPoints(self):
-        self.points += 100
+        self.points += 1
 
     def loseHealth(self):
         self.health -= 1
 
     def death(self):
-        if self.health == 0:
-            return
+        self.kill()
 
     def displayUI(self):
         #display info
@@ -47,7 +48,7 @@ class Zone():
 class Kanye():
     def __init__(self):
         self.health = 1
-        self.speed = 1
+        self.speed = .5
         self.kanyeImg = pygame.image.load('images/kanye.png')
         self.kanyeImg = pygame.transform.scale(self.kanyeImg, (95,75))
         self.spawnL = random.randrange(1,5)
@@ -64,6 +65,7 @@ class Kanye():
             self.posx = 800
             self.posy = random.randrange(0, 800)
         #bottom = (random, 800) right = (800, random) left = (0, random) top = (random, 0)
+        self.rect = self.image.get_rect(self.posx,self.posy)
 
     def movetoplayer(self):
         #get kanye to (370,370)
@@ -79,7 +81,6 @@ class Kanye():
         print(self.posx, self.posy)
         if self.posy >= 369 and self.posx >= 369:
             self.loseHealth()
-            print("is it even possible")
 
     def loseHealth(self):
         self.health -= 1
@@ -94,9 +95,8 @@ class Kanye():
         gameDisplay.blit(self.kanyeImg, (self.posx,self.posy))
 
     def alive(self):
-        while self.health > 0:
-            self.showKanye()
-            self.movetoplayer()
+       self.showKanye()
+       self.movetoplayer()
         
 
 
@@ -106,11 +106,11 @@ class Kanye():
 def gameLoop():
     gameExit = False
     zone = Zone()
-    i = 0
-    kanye = []
-    def countEnemy(i):
-        kanye[i].alive()
-        time.sleep(1)  
+    kanyes = []
+    start = 60
+    def countEnemy():
+        blank = Kanye()
+        kanyes.append(blank)
 
     while not gameExit:
         for event in pygame.event.get():
@@ -118,12 +118,20 @@ def gameLoop():
                 gameExit = True
             print(event)
         pygame.display.update()
-        clock.tick(60)
-        zone.showZone()
+        clock.tick(60) 
+        start -= 1
+        if start <= 0: #spawner
+            countEnemy()
+            start = 60
         gameDisplay.fill(backgroundcolor)
-        kanye.append(Kanye())
-        countEnemy(i)
-        i += 1
+        for kanye in kanyes:
+            kanye.alive()
+            if kanye.is_collided_with(zone):
+                kanye.kill()
+        zone.showZone() #zone
+        
+
+        
 
         
      

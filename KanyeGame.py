@@ -22,7 +22,10 @@ class Zone():
         self.posx = 310#(display_height * 0.34)
         self.posy = 310#(display_height * 0.34)
         self.zoneImg = pygame.image.load('images/zone.png')
-        self.rect = self.image.get_rect(self.posx,self.posy)
+        self.zonerect = pygame.Rect(self.posx, self.posy, 200,200)
+        self.pfont = pygame.font.SysFont('comicsans', 30, True)
+        self.hfont = pygame.font.SysFont('comicsans', 30, True)
+        
 
     def takeDamage(self):
         loseHealth()
@@ -39,8 +42,10 @@ class Zone():
         self.kill()
 
     def displayUI(self):
-        #display info
-        return
+        ptext = self.pfont.render('Points: '+str(self.points),1,(255,255,255))
+        gameDisplay.blit(ptext, (630,10))
+        htext = self.hfont.render('Health: '+str(self.health),1,(255,255,255))
+        gameDisplay.blit(htext, (100,10))
 
     def showZone(self):
         gameDisplay.blit(self.zoneImg, (self.posx,self.posy))
@@ -48,7 +53,7 @@ class Zone():
 class Kanye():
     def __init__(self):
         self.health = 1
-        self.speed = .5
+        self.speed = .9
         self.kanyeImg = pygame.image.load('images/kanye.png')
         self.kanyeImg = pygame.transform.scale(self.kanyeImg, (95,75))
         self.spawnL = random.randrange(1,5)
@@ -65,7 +70,8 @@ class Kanye():
             self.posx = 800
             self.posy = random.randrange(0, 800)
         #bottom = (random, 800) right = (800, random) left = (0, random) top = (random, 0)
-        self.rect = self.image.get_rect(self.posx,self.posy)
+        self.kanyerect = self.kanyeImg.get_rect()
+
 
     def movetoplayer(self):
         #get kanye to (370,370)
@@ -78,7 +84,6 @@ class Kanye():
            self.posy += self.speed
         else:
            self.posy -= self.speed  
-        print(self.posx, self.posy)
         if self.posy >= 369 and self.posx >= 369:
             self.loseHealth()
 
@@ -88,16 +93,17 @@ class Kanye():
             self.death()
 
     def death(self):
-            #figure it out dumb dumb
-            return
+            self.kanyerect = pygame.Rect(900, 900, 0,0)
+            self.kanyeImg = None
 
     def showKanye(self):
         gameDisplay.blit(self.kanyeImg, (self.posx,self.posy))
+        self.kanyerect = pygame.Rect(self.posx, self.posy, 95,75)
 
     def alive(self):
-       self.showKanye()
-       self.movetoplayer()
-        
+       if self.health >= 1:
+            self.showKanye()
+            self.movetoplayer()     
 
 
 
@@ -113,10 +119,25 @@ def gameLoop():
         kanyes.append(blank)
 
     while not gameExit:
+ 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 gameExit = True
-            print(event)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+               pos = pygame.mouse.get_pos()
+               for kanye in kanyes:
+                  if kanye.kanyerect.collidepoint(pos):
+                      kanye.loseHealth()
+                      zone.addPoints()
+                      print(zone.points)
+                  if kanye.kanyerect.colliderect(zone.zonerect):
+                      kanye.loseHealth()
+                      zone.loseHealth()
+                      print("health")
+                      print(zone.health)
+
+
+            #print(event)
         pygame.display.update()
         clock.tick(60) 
         start -= 1
@@ -126,17 +147,9 @@ def gameLoop():
         gameDisplay.fill(backgroundcolor)
         for kanye in kanyes:
             kanye.alive()
-            if kanye.is_collided_with(zone):
-                kanye.kill()
         zone.showZone() #zone
+        zone.displayUI()
         
-
-        
-
-        
-     
-       
-
-
+            
 gameLoop()
 pygame.quit()
